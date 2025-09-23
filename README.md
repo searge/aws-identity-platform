@@ -53,7 +53,3 @@ policies/
 ✅ Centralized access control
 ✅ Compliance automation
 ✅ Scalable identity management
-
----
-
-*Infrastructure as Code | Security by Design | Enterprise Ready*
