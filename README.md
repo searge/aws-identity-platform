@@ -49,7 +49,7 @@ policies/
 
 ## 🎯 For Teams Who Need
 
-✅ Multi-account AWS management
-✅ Centralized access control
-✅ Compliance automation
-✅ Scalable identity management
+- [x] Multi-account AWS management
+- [x] Scalable identity management
+- [x] Centralized access control
+- [x] Compliance automation
