@@ -305,7 +305,6 @@ run "valid_organization" {
   command = plan
 
   variables {
-    organization_name = "test-org"
     feature_set      = "ALL"
   }
 
