@@ -18,7 +18,7 @@ modules/
 ├── account_baseline/      # Account standardization
 └── permission_management/ # Access control automation
 
-environments/
+env/
 ├── dev/                   # Development environment
 └── prod/                  # Production environment
 
