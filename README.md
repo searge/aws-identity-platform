@@ -42,9 +42,9 @@ policies/
 
 ## 📚 Documentation
 
-- [Deployment Guide](docs/deployment-guide.md)
 - [Architecture Overview](docs/architecture.md)
-- [Security Guidelines](docs/security-guidelines.md)
+- [Security Guidelines](docs/security.md)
+- [Deployment Guide](docs/deployment.md)
 - [Module Documentation](modules/)
 
 ## 🎯 For Teams Who Need
