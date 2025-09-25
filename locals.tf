@@ -8,4 +8,11 @@ locals {
     ManagedBy   = "terraform"
   }
 
+  accounts = {
+    "sandbox_dev" = {
+      name  = "Sandbox-Dev"
+      email = var.sandbox_dev_email
+      ou    = "Development"
+    }
+  }
 }

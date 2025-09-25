@@ -18,3 +18,8 @@ variable "environment" {
     error_message = "Environment must be either 'dev' or 'prod'."
   }
 }
+
+variable "sandbox_dev_email" {
+  description = "The email address for the Sandbox Dev account's root user."
+  type        = string
+}
