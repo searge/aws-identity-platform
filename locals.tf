@@ -15,4 +15,10 @@ locals {
       ou    = "Development"
     }
   }
+
+  # Pass-through variables for identity center
+  identity_center_users  = var.identity_center_users
+  identity_center_groups = var.identity_center_groups
+  permission_sets        = var.permission_sets
+  account_assignments    = var.account_assignments
 }
