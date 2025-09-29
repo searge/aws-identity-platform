@@ -1,55 +1,60 @@
 # AWS Identity Platform
 
-A Terraform-based solution for centralized identity and access management across multi-account AWS environments.
+Terraform configuration for managing AWS Organizations and IAM Identity Center across multiple accounts.
 
-## 🎯 What This Does
-
-- **AWS Organizations**: Manages master account, member accounts, and organizational units
-- **IAM Identity Center**: Provides single sign-on and centralized permission management
-- **Account Baseline**: Standardizes configuration for new AWS accounts
-- **Access Control**: Automates permission assignments across all accounts
-
-## 📁 Structure
+## Structure
 
 ```bash
 modules/
-├── organization/          # AWS Organizations management
-├── identity_center/       # IAM Identity Center (SSO)
-├── account_baseline/      # Account standardization
-└── permission_management/ # Access control automation
+├── organization/     # AWS Organizations and accounts
+└── identity_center/  # IAM Identity Center (SSO)
 
-env/
-├── dev/                   # Development environment
-└── prod/                  # Production environment
-
-policies/
-├── service_control/       # Organization-wide SCPs
-└── permission_sets/       # Identity Center permissions
+config/
+├── users.yaml                # User definitions
+├── groups.yaml               # Group memberships
+├── permission_sets.yaml      # Permission set configurations
+└── account_assignments.yaml  # Group-to-account mappings
 ```
 
-## 🛡️ Security First
+## Features
 
-- **Least Privilege**: Minimal required permissions only
-- **MFA Required**: Multi-factor authentication for admin access
-- **Centralized Logging**: All identity events tracked and monitored
-- **Regular Reviews**: Automated access auditing and compliance checks
+- **AWS Organizations**: Master account with Development OU containing Sandbox-Dev, Prod, and Audit accounts
+- **IAM Identity Center**: Centralized SSO with declarative user, group, and permission management
+- **Configuration-as-Code**: All identities and permissions defined in YAML files
 
-## 📋 Prerequisites
+## Groups & Access
 
-- AWS CLI configured with master account access
+- **SuperAdmins**: Full administrative access to all accounts
+- **PlatformAdmins**: Full administrative access to all accounts
+- **Developers**: Developer access to Sandbox-Dev, read-only to Prod
+- **DevOpsEngineers**: Infrastructure admin access to Sandbox-Dev and Prod
+- **SecurityAuditors**: Security audit access across all accounts
+
+## Requirements
+
 - Terraform >= 1.10
-- New AWS account (becomes organization master)
+- AWS CLI configured with organization master account credentials
+- Environment variables for account emails (see `terraform.tfvars`)
 
-## 📚 Documentation
+## Usage
 
-- [Architecture Overview](docs/architecture.md)
-- [Security Guidelines](docs/security.md)
-- [Deployment Guide](docs/deployment.md)
-- [Module Documentation](modules/)
+Set required environment variables:
 
-## 🎯 For Teams Who Need
+```bash
+export TF_VAR_sandbox_dev_email="..."
+export TF_VAR_production_email="..."
+export TF_VAR_audit_email="..."
+export TF_VAR_superadmin_email="..."
+```
 
-- [x] Multi-account AWS management
-- [x] Scalable identity management
-- [x] Centralized access control
-- [x] Compliance automation
+Apply configuration:
+
+```bash
+terraform init
+terraform plan -out=plan.tfplan
+terraform apply plan.tfplan
+```
+
+## Outputs
+
+After applying, access the Identity Center portal at the URL provided in outputs to configure user passwords and MFA.
