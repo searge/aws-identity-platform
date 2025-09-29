@@ -2,6 +2,12 @@
 
 Terraform configuration for managing AWS Organizations and IAM Identity Center across multiple accounts.
 
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Development](docs/development.md)
+- [Security](docs/security.md)
+
 ## Structure
 
 ```bash
