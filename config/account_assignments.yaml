@@ -1,0 +1,53 @@
+# PlatformAdmins - full access everywhere
+- principal_name: PlatformAdmins
+  principal_type: GROUP
+  account_name: sandbox_dev
+  permission_set: AdministratorAccess
+
+- principal_name: PlatformAdmins
+  principal_type: GROUP
+  account_name: prod
+  permission_set: AdministratorAccess
+
+- principal_name: PlatformAdmins
+  principal_type: GROUP
+  account_name: audit
+  permission_set: AdministratorAccess
+
+# Developers - dev access + prod read-only
+- principal_name: Developers
+  principal_type: GROUP
+  account_name: sandbox_dev
+  permission_set: DeveloperAccess
+
+- principal_name: Developers
+  principal_type: GROUP
+  account_name: prod
+  permission_set: SecurityAuditorFull
+
+# DevOps - infrastructure management
+- principal_name: DevOpsEngineers
+  principal_type: GROUP
+  account_name: sandbox_dev
+  permission_set: InfrastructureAdmin
+
+- principal_name: DevOpsEngineers
+  principal_type: GROUP
+  account_name: prod
+  permission_set: InfrastructureAdmin
+
+# Security Auditors - read-only everywhere
+- principal_name: SecurityAuditors
+  principal_type: GROUP
+  account_name: sandbox_dev
+  permission_set: SecurityAuditorFull
+
+- principal_name: SecurityAuditors
+  principal_type: GROUP
+  account_name: prod
+  permission_set: SecurityAuditorFull
+
+- principal_name: SecurityAuditors
+  principal_type: GROUP
+  account_name: audit
+  permission_set: SecurityAuditorFull

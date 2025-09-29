@@ -29,6 +29,7 @@ variable "permission_sets" {
     description         = string
     session_duration    = optional(string, "PT1H")
     managed_policy_arns = optional(list(string), [])
+    inline_policy_file  = optional(string, null)
   }))
   default = {}
 }

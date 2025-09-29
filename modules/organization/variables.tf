@@ -1,10 +1,9 @@
-variable "environment" {
-  description = "Environment name (e.g., dev, prod)"
-  type        = string
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be either 'dev' or 'prod'."
-  }
+variable "organizational_units" {
+  description = "Map of organizational units to create"
+  type = map(object({
+    name = string
+  }))
+  default = {}
 }
 
 variable "accounts" {

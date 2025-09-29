@@ -5,13 +5,15 @@ resource "aws_organizations_organization" "main" {
   feature_set = "ALL"
 }
 
-# Create `aws_organizations_organizational_unit` based on environment-specific OU structure
-resource "aws_organizations_organizational_unit" "environment" {
-  name      = local.ou_names[var.environment]
+# Create organizational units dynamically
+resource "aws_organizations_organizational_unit" "this" {
+  for_each = local.ou_names
+
+  name      = each.value
   parent_id = aws_organizations_organization.main.roots[0].id
 
   tags = merge(var.common_tags, {
-    Name = local.ou_names[var.environment]
+    Name = each.value
     Type = "OrganizationalUnit"
   })
 }
@@ -23,7 +25,7 @@ resource "aws_organizations_account" "this" {
   name  = each.value.name
   email = each.value.email
 
-  parent_id = aws_organizations_organizational_unit.environment.id
+  parent_id = aws_organizations_organizational_unit.this[each.value.ou].id
 
   # Ensure the account can be closed via Terraform
   close_on_deletion = true

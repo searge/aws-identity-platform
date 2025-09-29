@@ -1,0 +1,20 @@
+PlatformAdmins:
+  description: Platform administrators with full access
+  members:
+    - alice
+
+Developers:
+  description: Application developers
+  members:
+    - bob
+    - johndoe
+
+DevOpsEngineers:
+  description: Infrastructure and operations engineers
+  members:
+    - carol
+
+SecurityAuditors:
+  description: Security and compliance auditors
+  members:
+    - dan

@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InfrastructureServicesFullAccess",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "vpc:*",
+        "autoscaling:*",
+        "ssm:*",
+        "cloudwatch:*",
+        "cloudtrail:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

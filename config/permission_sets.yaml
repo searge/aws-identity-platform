@@ -1,0 +1,28 @@
+AdministratorAccess:
+  description: Full administrative access
+  session_duration: PT8H
+  managed_policy_arns:
+    - arn:aws:iam::aws:policy/AdministratorAccess
+
+DeveloperAccess:
+  description: Application development access
+  session_duration: PT4H
+  inline_policy_file: policies/permission_sets/developer_access.json
+
+InfrastructureAdmin:
+  description: Infrastructure management access
+  session_duration: PT4H
+  inline_policy_file: policies/permission_sets/infrastructure_admin.json
+
+SecurityAuditor:
+  description: Security audit and compliance access
+  session_duration: PT4H
+  managed_policy_arns:
+    - arn:aws:iam::aws:policy/SecurityAudit
+
+SecurityAuditorFull:
+  description: Security audit with view-only access
+  session_duration: PT4H
+  managed_policy_arns:
+    - arn:aws:iam::aws:policy/SecurityAudit
+    - arn:aws:iam::aws:policy/ViewOnlyAccess

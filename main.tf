@@ -2,9 +2,9 @@
 module "organization" {
   source = "./modules/organization"
 
-  environment = var.environment
-  common_tags = local.common_tags
-  accounts    = local.accounts
+  common_tags          = local.common_tags
+  accounts             = local.accounts
+  organizational_units = local.organizational_units
 }
 
 module "identity_center" {

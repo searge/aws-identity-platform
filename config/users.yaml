@@ -1,0 +1,24 @@
+johndoe:
+  given_name: John
+  family_name: Doe
+  email: john.doe@example.com
+
+alice:
+  given_name: Alice
+  family_name: Admin
+  email: alice.admin@example.com
+
+bob:
+  given_name: Bob
+  family_name: Developer
+  email: bob.dev@example.com
+
+carol:
+  given_name: Carol
+  family_name: DevOps
+  email: carol.devops@example.com
+
+dan:
+  given_name: Dan
+  family_name: Auditor
+  email: dan.audit@example.com
