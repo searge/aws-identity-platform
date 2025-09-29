@@ -10,8 +10,8 @@ locals {
 
   # Organizational units configuration
   organizational_units = {
-    workloads = {
-      name = "Workloads"
+    development = {
+      name = "Development"
     }
   }
 
@@ -20,17 +20,17 @@ locals {
     sandbox_dev = {
       name  = "Sandbox-Dev"
       email = var.sandbox_dev_email
-      ou    = "workloads"
+      ou    = "development"
     }
     prod = {
       name  = "Prod"
       email = var.prod_email
-      ou    = "workloads"
+      ou    = "development"
     }
     audit = {
       name  = "Audit"
       email = var.audit_email
-      ou    = "workloads"
+      ou    = "development"
     }
   }
 
