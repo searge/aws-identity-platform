@@ -20,7 +20,7 @@ This module manages AWS Organizations infrastructure, including organizational u
 
 | Name | Version |
 | ---- | ------- |
-| aws  | ~> 5.94 |
+| aws  | 5.100.0 |
 
 ## Resources
 

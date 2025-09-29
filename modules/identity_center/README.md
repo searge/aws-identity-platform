@@ -48,4 +48,12 @@ This module manages AWS IAM Identity Center (SSO) resources including users, gro
 | groups               | A map of groups to create in IAM Identity Center.                          | ```map(object({ description = string members = list(string) }))```                                                                                                                   | `{}`    |    no    |
 | permission\_sets     | A map of permission sets to create in IAM Identity Center.                 | ```map(object({ description = string session_duration = optional(string, "PT1H") managed_policy_arns = optional(list(string), []) inline_policy_file = optional(string, null) }))``` | `{}`    |    no    |
 | users                | A map of users to create in IAM Identity Center.                           | ```map(object({ given_name = string family_name = string email = string }))```                                                                                                       | `{}`    |    no    |
+
+## Outputs
+
+| Name                | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| identity\_store\_id | The ID of the identity store                     |
+| portal\_url         | The URL to access the IAM Identity Center portal |
+| sso\_instance\_arn  | The ARN of the SSO instance                      |
 <!-- END_TF_DOCS -->
