@@ -28,7 +28,7 @@ output "accounts" {
 
 output "identity_center_portal_url" {
   description = "The URL to access the IAM Identity Center portal"
-  value       = "https://d-${replace(one(data.aws_ssoadmin_instances.sso.identity_store_ids), "/^d-/", "")}.awsapps.com/start"
+  value       = module.identity_center.portal_url
 }
 
 output "permission_sets_summary" {

@@ -1,3 +1,19 @@
+# SuperAdmins - full access to all accounts
+- principal_name: SuperAdmins
+  principal_type: GROUP
+  account_name: sandbox_dev
+  permission_set: AdministratorAccess
+
+- principal_name: SuperAdmins
+  principal_type: GROUP
+  account_name: prod
+  permission_set: AdministratorAccess
+
+- principal_name: SuperAdmins
+  principal_type: GROUP
+  account_name: audit
+  permission_set: AdministratorAccess
+
 # PlatformAdmins - full access everywhere
 - principal_name: PlatformAdmins
   principal_type: GROUP

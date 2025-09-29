@@ -24,13 +24,18 @@ variable "sandbox_dev_email" {
   type        = string
 }
 
-variable "prod_email" {
+variable "production_email" {
   description = "The email address for the Production account's root user."
   type        = string
 }
 
 variable "audit_email" {
   description = "The email address for the Audit account's root user."
+  type        = string
+}
+
+variable "superadmin_email" {
+  description = "The email address for the superadmin user."
   type        = string
 }
 

@@ -1,3 +1,8 @@
+dereban:
+  given_name: Max
+  family_name: Dereban
+  email: ${superadmin_email}
+
 johndoe:
   given_name: John
   family_name: Doe

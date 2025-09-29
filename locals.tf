@@ -24,7 +24,7 @@ locals {
     }
     prod = {
       name  = "Prod"
-      email = var.prod_email
+      email = var.production_email
       ou    = "development"
     }
     audit = {
@@ -34,14 +34,20 @@ locals {
     }
   }
 
-  # Parse YAML configuration files
-  users_yaml               = yamldecode(file("${path.root}/config/users.yaml"))
+  # Parse YAML configuration files with template substitution
+  users_yaml_raw = yamldecode(
+    replace(
+      file("${path.root}/config/users.yaml"),
+      "$${superadmin_email}",
+      var.superadmin_email
+    )
+  )
   groups_yaml              = yamldecode(file("${path.root}/config/groups.yaml"))
   permission_sets_yaml     = yamldecode(file("${path.root}/config/permission_sets.yaml"))
   account_assignments_yaml = yamldecode(file("${path.root}/config/account_assignments.yaml"))
 
   # Transform YAML data to Terraform format
-  identity_center_users = local.users_yaml
+  identity_center_users = local.users_yaml_raw
 
   identity_center_groups = {
     for group_key, group_value in local.groups_yaml : group_key => {
@@ -68,3 +74,4 @@ locals {
     }
   ]
 }
+
