@@ -35,3 +35,14 @@ resource "aws_ssoadmin_permission_set_inline_policy" "this" {
   permission_set_arn = aws_ssoadmin_permission_set.this[each.key].arn
   inline_policy      = file(each.value.inline_policy_file)
 }
+
+# Explicitly provision permission sets to accounts before assignments
+resource "time_sleep" "wait_for_permission_sets" {
+  depends_on = [
+    aws_ssoadmin_permission_set.this,
+    aws_ssoadmin_managed_policy_attachment.this,
+    aws_ssoadmin_permission_set_inline_policy.this
+  ]
+
+  create_duration = "10s"
+}

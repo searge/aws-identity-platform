@@ -21,8 +21,8 @@ SecurityAuditor:
     - arn:aws:iam::aws:policy/SecurityAudit
 
 SecurityAuditorFull:
-  description: Security audit with view-only access
+  description: Security audit with read-only access
   session_duration: PT4H
   managed_policy_arns:
     - arn:aws:iam::aws:policy/SecurityAudit
-    - arn:aws:iam::aws:policy/ViewOnlyAccess
+    - arn:aws:iam::aws:policy/ReadOnlyAccess

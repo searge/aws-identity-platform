@@ -1,6 +1,10 @@
 resource "aws_ssoadmin_account_assignment" "this" {
   for_each = local.assignments_map
 
+  depends_on = [
+    time_sleep.wait_for_permission_sets
+  ]
+
   instance_arn       = local.sso_instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.this[each.value.permission_set].arn
 
