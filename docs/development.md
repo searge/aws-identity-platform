@@ -1,390 +1,336 @@
 # Development Guide
 
-## Module Development Principles
+- [Development Guide](#development-guide)
+  - [Project Structure](#project-structure)
+  - [Prerequisites](#prerequisites)
+  - [Configuration Files](#configuration-files)
+    - [users.yaml](#usersyaml)
+    - [groups.yaml](#groupsyaml)
+    - [permission\_sets.yaml](#permission_setsyaml)
+    - [account\_assignments.yaml](#account_assignmentsyaml)
+  - [Workflow](#workflow)
+    - [Initial Setup](#initial-setup)
+    - [Making Changes](#making-changes)
+  - [Data Transformation](#data-transformation)
+  - [Module Interface](#module-interface)
+    - [Organization Module](#organization-module)
+    - [Identity Center Module](#identity-center-module)
+  - [Best Practices](#best-practices)
+    - [Configuration Management](#configuration-management)
+    - [Security](#security)
+    - [Testing](#testing)
+    - [State Management](#state-management)
+  - [Common Tasks](#common-tasks)
+    - [Import Existing Resources](#import-existing-resources)
+    - [Debugging](#debugging)
+    - [Validation](#validation)
+  - [Troubleshooting](#troubleshooting)
+    - ["Resource already exists"](#resource-already-exists)
+    - ["Cannot delete OU with children"](#cannot-delete-ou-with-children)
+    - ["Variable not set"](#variable-not-set)
+    - ["Permission set provisioning failed"](#permission-set-provisioning-failed)
 
-This AWS Identity Platform follows infrastructure-as-code best practices with a **module-first approach** where the root module orchestrates specialized sub-modules.
+## Project Structure
 
-### Architecture Pattern
+This is a Terraform project managing AWS Organizations and IAM Identity Center with a declarative YAML-based configuration approach.
 
 ```bash
-Root Module (orchestration)    → Sub-modules (specialized functionality)
-├── modules/organization/      # AWS Organizations management
-├── modules/identity_center/   # IAM Identity Center (SSO)
-├── modules/account_baseline/  # Account standardization
-└── modules/permission_management/ # Access control automation
+.
+├── modules/
+│   ├── organization/            # AWS Organizations and accounts
+│   └── identity_center/         # IAM Identity Center (users, groups, permissions)
+├── config/
+│   ├── users.yaml               # User definitions
+│   ├── groups.yaml              # Group memberships
+│   ├── permission_sets.yaml     # Permission set configurations
+│   └── account_assignments.yaml # Access mappings
+├── policies/
+│   └── permission_sets/         # Custom IAM policies for permission sets
+├── main.tf                      # Module orchestration
+├── locals.tf                    # YAML parsing and data transformation
+├── variables.tf                 # Environment variables
+└── outputs.tf                   # Exported values
 ```
 
-## File Organization Standards
+## Prerequisites
 
-### Root Module Structure
+- Terraform >= 1.10
+- AWS CLI configured with master account credentials
+- IAM Identity Center enabled in AWS Console (manual step)
 
-```hcl
-# main.tf - Module orchestration and composition
-module "organization" {
-  source = "./modules/organization"
-  # Variable passing and dependencies
-}
+## Configuration Files
 
-module "identity_center" {
-  source = "./modules/identity_center"
-  organization_id = module.organization.organization_id
-  # Cross-module data flow
-}
+### users.yaml
+
+Define users with their names and emails:
+
+```yaml
+dereban:
+  given_name: Max
+  family_name: Dereban
+  email: ${superadmin_email}  # Uses variable substitution
+
+alice:
+  given_name: Alice
+  family_name: Admin
+  email: alice.admin@example.com
 ```
 
-### Standard File Purposes
+### groups.yaml
 
-**main.tf** - Primary entrypoint
+Define groups and their members:
 
-- Module calls and resource orchestration
-- Cross-module dependencies
-- Resource composition logic
+```yaml
+SuperAdmins:
+  description: Super administrators with full access to all accounts
+  members:
+    - dereban
 
-**variables.tf** - Input interface
+Developers:
+  description: Application developers
+  members:
+    - alice
+    - bob
+```
 
-- All variable declarations with descriptions
-- Input validation rules
-- Type constraints and defaults
+### permission_sets.yaml
 
-**locals.tf** - Data transformation layer
+Define permission sets with session duration and policies:
+
+```yaml
+AdministratorAccess:
+  description: Full administrative access
+  session_duration: PT8H
+  managed_policy_arns:
+    - arn:aws:iam::aws:policy/AdministratorAccess
+
+DeveloperAccess:
+  description: Application development access
+  session_duration: PT4H
+  inline_policy_file: policies/permission_sets/developer_access.json
+```
+
+### account_assignments.yaml
+
+Map groups to accounts with specific permission sets:
+
+```yaml
+- principal_name: SuperAdmins
+  principal_type: GROUP
+  account_name: sandbox_dev
+  permission_set: AdministratorAccess
+
+- principal_name: Developers
+  principal_type: GROUP
+  account_name: sandbox_dev
+  permission_set: DeveloperAccess
+```
+
+## Workflow
+
+### Initial Setup
+
+1. Set environment variables:
+
+   ```bash
+   export TF_VAR_sandbox_dev_email="..."
+   export TF_VAR_production_email="..."
+   export TF_VAR_audit_email="..."
+   export TF_VAR_superadmin_email="..."
+   ```
+
+2. Initialize Terraform:
+
+   ```bash
+   terraform init
+   ```
+
+3. Plan changes:
+
+   ```bash
+   terraform plan -out=plan.tfplan
+   ```
+
+4. Apply changes:
+
+   ```bash
+   terraform apply plan.tfplan
+   ```
+
+### Making Changes
+
+1. **Add a new user**:
+   - Add to `config/users.yaml`
+   - Add to group in `config/groups.yaml`
+   - Run `terraform plan` and `apply`
+
+2. **Change user's access**:
+   - Modify `config/account_assignments.yaml`
+   - Run `terraform plan` and `apply`
+
+3. **Add a new permission set**:
+   - Define in `config/permission_sets.yaml`
+   - Create custom policy in `policies/permission_sets/` if needed
+   - Add assignments in `config/account_assignments.yaml`
+   - Run `terraform plan` and `apply`
+
+4. **Add a new account**:
+   - Add to `locals.tf` in `accounts` map
+   - Add assignments in `config/account_assignments.yaml`
+   - Run `terraform plan` and `apply`
+
+## Data Transformation
+
+The `locals.tf` file handles YAML parsing and data transformation:
 
 ```hcl
+# Parse YAML files
 locals {
-  # Data transformations
-  account_map = { for account in var.accounts : account.name => account }
+  users_yaml_raw = yamldecode(
+    replace(
+      file("${path.root}/config/users.yaml"),
+      "${superadmin_email}",
+      var.superadmin_email
+    )
+  )
 
-  # Common calculations
-  common_tags = merge(var.tags, {
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-  })
+  # Transform to Terraform structures
+  identity_center_users = local.users_yaml_raw
 
-  # Complex mappings for iterations
-  ou_policy_attachments = flatten([
-    for ou_id, policies in var.ou_policy_map : [
-      for policy in policies : {
-        ou_id  = ou_id
-        policy = policy
-      }
-    ]
-  ])
+  # ... more transformations
 }
 ```
 
-**data.tf** - External data queries
+This allows:
 
-```hcl
-# AWS Organizations structure
-data "aws_organizations_organization" "this" {}
+- Variable substitution in YAML files
+- Consistent data structure for modules
+- Easy configuration updates without touching Terraform code
 
-# Identity Center instances
-data "aws_ssoadmin_instances" "this" {}
+## Module Interface
 
-# Current account information
-data "aws_caller_identity" "current" {}
+### Organization Module
 
-# External policy documents
-data "aws_iam_policy_document" "trust_policy" {
-  # Policy statements
-}
-```
+**Inputs**:
 
-**outputs.tf** - Module interface
+- `common_tags`: Tags applied to all resources
+- `accounts`: Map of accounts to create
+- `organizational_units`: Map of OUs
 
-```hcl
-output "organization_id" {
-  description = "AWS Organization ID"
-  value       = aws_organizations_organization.this.id
-}
-```
+**Outputs**:
 
-## Provider Configuration (2025)
+- `organization_id`: AWS Organization ID
+- `accounts`: Map of created account IDs
+- `organizational_units`: Map of created OU IDs
 
-### Required Providers
+### Identity Center Module
 
-```hcl
-# versions.tf
-terraform {
-  required_version = ">= 1.10"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.94"  # Stable version, avoid v6.0 beta
-    }
-  }
-}
-```
+**Inputs**:
 
-### Provider Authentication
+- `accounts`: Account map from organization module
+- `users`: User definitions from YAML
+- `groups`: Group definitions from YAML
+- `permission_sets`: Permission set configurations from YAML
+- `account_assignments`: Access mappings from YAML
 
-- Use AWS CLI profiles for local development
-- Use IAM roles for CI/CD pipelines
-- Never hardcode credentials in Terraform files
+**Outputs**:
 
-## Variable Validation Patterns
+- `sso_instance_arn`: Identity Center instance ARN
+- `sso_portal_url`: SSO login portal URL
+- User, group, and permission set details
 
-### Input Validation
+## Best Practices
 
-```hcl
-variable "environment" {
-  description = "Environment name (dev or prod)"
-  type        = string
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be dev or prod."
-  }
-}
+### Configuration Management
 
-variable "accounts" {
-  description = "Map of accounts to create"
-  type = map(object({
-    name  = string
-    email = string
-    ou    = string
-  }))
-  validation {
-    condition = alltrue([
-      for account in values(var.accounts) :
-      can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", account.email))
-    ])
-    error_message = "All account emails must be valid email addresses."
-  }
-}
-```
+- **Version Control**: Commit all YAML configuration files
+- **Variable Substitution**: Use `${variable_name}` in YAML for dynamic values
+- **Least Privilege**: Start with minimal permissions, expand as needed
+- **Documentation**: Add comments in YAML files explaining access decisions
 
-### Required Tags Validation
+### Security
 
-```hcl
-variable "tags" {
-  description = "Resource tags"
-  type        = map(string)
-  validation {
-    condition = alltrue([
-      contains(keys(var.tags), "Environment"),
-      contains(keys(var.tags), "Owner"),
-      contains(keys(var.tags), "DataClassification")
-    ])
-    error_message = "Tags must include Environment, Owner, and DataClassification."
-  }
-}
-```
+- **Never commit secrets**: Use environment variables for sensitive data
+- **MFA Required**: Configure MFA in Identity Center console
+- **Regular Reviews**: Audit `config/account_assignments.yaml` regularly
+- **Separation of Duties**: Use different groups for different roles
 
-## AWS Identity Center Specifics
+### Testing
 
-### Manual Prerequisites
+Before applying to production:
 
-⚠️ **These steps cannot be automated in Terraform:**
+1. Run `terraform fmt -recursive` to format code
+2. Run `terraform validate` to check syntax
+3. Run `terraform plan` and review changes carefully
+4. Test in non-production accounts first
 
-1. Enable IAM Identity Center in AWS Console
-2. Configure identity source (Internal directory or External IdP)
-3. Set up SCIM integration (if using external IdP)
+### State Management
 
-### Terraform-Managed Resources
+- Use remote state (S3 + DynamoDB) for team collaboration
+- Configure in `backend.tf`
+- Never manually edit state files
 
-```hcl
-# Permission sets
-resource "aws_ssoadmin_permission_set" "admin" {
-  name             = "AdminAccess"
-  description      = "Full administrative access"
-  instance_arn     = local.identity_center_arn
-  session_duration = "PT8H"
-}
+## Common Tasks
 
-# Policy attachments
-resource "aws_ssoadmin_managed_policy_attachment" "admin" {
-  instance_arn       = local.identity_center_arn
-  managed_policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-  permission_set_arn = aws_ssoadmin_permission_set.admin.arn
-}
+### Import Existing Resources
 
-# Account assignments
-resource "aws_ssoadmin_account_assignment" "admin" {
-  instance_arn       = local.identity_center_arn
-  permission_set_arn = aws_ssoadmin_permission_set.admin.arn
-  principal_id       = data.aws_identitystore_group.admins.group_id
-  principal_type     = "GROUP"
-  target_id          = var.account_id
-  target_type        = "AWS_ACCOUNT"
-}
-```
-
-## Development Workflow
-
-### Environment Management
+If resources exist outside Terraform:
 
 ```bash
-# Development
-terraform init -backend-config=env/dev/backend.tfvars
-terraform plan -var-file=env/dev/terraform.tfvars -out=dev.tfplan
-terraform apply "dev.tfplan"
+# Import organization
+terraform import module.organization.aws_organizations_organization.main o-xxxxxxxxxx
 
-# Production
-terraform init -backend-config=env/prod/backend.tfvars
-terraform plan -var-file=env/prod/terraform.tfvars -out=prod.tfplan
-terraform apply "prod.tfplan"
+# Import existing user
+terraform import module.identity_center.aws_identitystore_user.this[\"username\"] d-xxxxxxxxxx/user-id
 ```
 
-### Code Quality Standards
+### Debugging
 
-#### Pre-commit Checks
+Enable detailed logs:
 
 ```bash
-# Format code
-terraform fmt -recursive
+export TF_LOG=DEBUG
+terraform plan
+```
 
-# Validate syntax
+View specific resource details:
+
+```bash
+terraform state show module.identity_center.aws_identitystore_user.this[\"dereban\"]
+```
+
+### Validation
+
+Check configuration syntax:
+
+```bash
 terraform validate
-
-# Run module tests
-terraform test
-
-# Security scanning
-checkov -d .
-tfsec .
 ```
 
-#### Linting Configuration
+Format all files:
 
-```hcl
-# .tflint.hcl
-plugin "aws" {
-  enabled = true
-  version = "0.40.0"
-  source  = "github.com/terraform-linters/tflint-ruleset-aws"
-}
-
-rule "terraform_required_version" {
-  enabled = true
-}
-
-rule "terraform_naming_convention" {
-  enabled = true
-}
+```bash
+terraform fmt -recursive
 ```
 
-## Security Best Practices
+## Troubleshooting
 
-### Least Privilege Implementation
+### "Resource already exists"
 
-```hcl
-# Use data sources instead of hardcoding
-data "aws_caller_identity" "current" {}
+Resource was created outside Terraform. Use `terraform import` to bring it into state.
 
-locals {
-  account_id = data.aws_caller_identity.current.account_id
-}
+### "Cannot delete OU with children"
 
-# Instead of: account_id = "123456789012"
+Remove child accounts from OU first, or avoid replacing OUs by importing the organization.
+
+### "Variable not set"
+
+Ensure all required environment variables are exported:
+
+```bash
+export TF_VAR_sandbox_dev_email="..."
 ```
 
-### Sensitive Data Handling
+### "Permission set provisioning failed"
 
-- Store sensitive values in AWS Secrets Manager
-- Use Terraform sensitive variables for passwords
-- Never commit .tfvars files with secrets
-- Use environment variables: `TF_VAR_<variable_name>`
-
-### Resource Protection
-
-```hcl
-resource "aws_organizations_organization" "this" {
-  # Prevent accidental deletion
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-```
-
-## Testing Approach
-
-### Module Testing
-
-```hcl
-# tests/basic.tftest.hcl
-run "valid_organization" {
-  command = plan
-
-  variables {
-    organization_name = "test-org"
-    feature_set      = "ALL"
-  }
-
-  assert {
-    condition     = aws_organizations_organization.this.feature_set == "ALL"
-    error_message = "Organization must have ALL features enabled"
-  }
-}
-```
-
-### Integration Testing
-
-- Test cross-module dependencies
-- Validate policy attachments
-- Test account creation workflows
-- Verify permission set assignments
-
-## Common Patterns
-
-### Dynamic Resource Creation
-
-```hcl
-# Create multiple permission sets
-resource "aws_ssoadmin_permission_set" "this" {
-  for_each = var.permission_sets
-
-  name         = each.key
-  description  = each.value.description
-  instance_arn = local.identity_center_arn
-}
-```
-
-### Conditional Resource Creation
-
-```hcl
-# Create dev account only in dev environment
-resource "aws_organizations_account" "dev" {
-  count = var.environment == "dev" ? 1 : 0
-
-  name  = "development"
-  email = var.dev_account_email
-}
-```
-
-## Error Prevention
-
-### Common Mistakes
-
-❌ **Don't do:**
-
-- Hardcode account IDs or ARNs
-- Skip input validation
-- Ignore Terraform state locking
-- Mix environments in same state
-
-✅ **Do:**
-
-- Use data sources for dynamic values
-- Validate all inputs
-- Use remote state with locking
-- Separate state files per environment
-
-### Resource Dependencies
-
-```hcl
-# Explicit dependencies
-resource "aws_ssoadmin_account_assignment" "this" {
-  depends_on = [aws_ssoadmin_permission_set.this]
-  # Resource configuration
-}
-```
-
-## Documentation Standards
-
-- All variables must have descriptions
-- All outputs must have descriptions
-- Use `terraform-docs` for automated README generation
-- Document architectural decisions in ADR format
-- Keep examples in `examples/` directory
-
----
-*Follow these principles to maintain consistent, secure, and scalable infrastructure code.*
+Wait a few minutes and retry. Permission set provisioning can be eventually consistent.
