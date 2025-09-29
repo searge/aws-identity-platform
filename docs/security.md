@@ -1,12 +1,12 @@
 # Security Guidelines
 
-## 🔐 Core Security Principles
+## Core Security Principles
 
 **Zero Trust**: All access requires verification, regardless of location or user status.
 **Least Privilege**: Users get minimum permissions needed for their role.
 **Defense in Depth**: Multiple security layers protect against threats.
 
-## 🛡️ Authentication & Authorization
+## Authentication & Authorization
 
 ### Multi-Factor Authentication (MFA)
 
@@ -28,7 +28,7 @@ ReadOnly Access  → View-only across all accounts
 - **Idle timeout**: 2 hours
 - **Re-authentication required** for sensitive operations
 
-## 🚨 Security Controls
+## Security Controls
 
 ### Service Control Policies (SCPs)
 
@@ -49,7 +49,7 @@ ReadOnly Access  → View-only across all accounts
 - **Cross-account roles** for controlled access
 - **VPC endpoints** for private AWS service access
 
-## 🔍 Compliance & Auditing
+## Compliance & Auditing
 
 ### Access Reviews
 
@@ -69,7 +69,7 @@ ReadOnly Access  → View-only across all accounts
 - **Policy simulation** before deployment
 - **Drift detection** for unauthorized changes
 
-## 🚀 Security Automation
+## Security Automation
 
 ### Deployment Security
 
@@ -92,14 +92,14 @@ terraform apply "plan.tfplan"
 4. **Remediate** - Terraform-managed recovery
 5. **Document** - Update security procedures
 
-## ⚡ Quick Reference
+## Quick Reference
 
 | Threat | Control | Implementation |
 |--------|---------|----------------|
-| Privilege Escalation | SCPs | `policies/service_control/` |
+| Privilege Escalation | SCPs | Service Control Policies (planned) |
 | Unauthorized Access | MFA + Identity Center | `modules/identity_center/` |
-| Data Breach | Encryption + Monitoring | `modules/account_baseline/` |
-| Insider Threat | Access Reviews | `modules/permission_management/` |
+| Data Breach | Encryption + Monitoring | CloudTrail + GuardDuty + Config |
+| Insider Threat | Access Reviews | Quarterly review of `config/account_assignments.yaml` |
 
 ---
 *Security is everyone's responsibility. When in doubt, ask the security team.*

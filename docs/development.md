@@ -1,35 +1,5 @@
 # Development Guide
 
-- [Development Guide](#development-guide)
-  - [Project Structure](#project-structure)
-  - [Prerequisites](#prerequisites)
-  - [Configuration Files](#configuration-files)
-    - [users.yaml](#usersyaml)
-    - [groups.yaml](#groupsyaml)
-    - [permission\_sets.yaml](#permission_setsyaml)
-    - [account\_assignments.yaml](#account_assignmentsyaml)
-  - [Workflow](#workflow)
-    - [Initial Setup](#initial-setup)
-    - [Making Changes](#making-changes)
-  - [Data Transformation](#data-transformation)
-  - [Module Interface](#module-interface)
-    - [Organization Module](#organization-module)
-    - [Identity Center Module](#identity-center-module)
-  - [Best Practices](#best-practices)
-    - [Configuration Management](#configuration-management)
-    - [Security](#security)
-    - [Testing](#testing)
-    - [State Management](#state-management)
-  - [Common Tasks](#common-tasks)
-    - [Import Existing Resources](#import-existing-resources)
-    - [Debugging](#debugging)
-    - [Validation](#validation)
-  - [Troubleshooting](#troubleshooting)
-    - ["Resource already exists"](#resource-already-exists)
-    - ["Cannot delete OU with children"](#cannot-delete-ou-with-children)
-    - ["Variable not set"](#variable-not-set)
-    - ["Permission set provisioning failed"](#permission-set-provisioning-failed)
-
 ## Project Structure
 
 This is a Terraform project managing AWS Organizations and IAM Identity Center with a declarative YAML-based configuration approach.
@@ -56,75 +26,18 @@ This is a Terraform project managing AWS Organizations and IAM Identity Center w
 
 - Terraform >= 1.10
 - AWS CLI configured with master account credentials
-- IAM Identity Center enabled in AWS Console (manual step)
+- IAM Identity Center enabled in AWS Console
 
 ## Configuration Files
 
-### users.yaml
+All configuration is defined in YAML files under `config/`:
 
-Define users with their names and emails:
+- `users.yaml` - User definitions with names and emails
+- `groups.yaml` - Group definitions and memberships
+- `permission_sets.yaml` - Permission sets with policies and session durations
+- `account_assignments.yaml` - Mappings of groups to accounts and permission sets
 
-```yaml
-dereban:
-  given_name: Max
-  family_name: Dereban
-  email: ${superadmin_email}  # Uses variable substitution
-
-alice:
-  given_name: Alice
-  family_name: Admin
-  email: alice.admin@example.com
-```
-
-### groups.yaml
-
-Define groups and their members:
-
-```yaml
-SuperAdmins:
-  description: Super administrators with full access to all accounts
-  members:
-    - dereban
-
-Developers:
-  description: Application developers
-  members:
-    - alice
-    - bob
-```
-
-### permission_sets.yaml
-
-Define permission sets with session duration and policies:
-
-```yaml
-AdministratorAccess:
-  description: Full administrative access
-  session_duration: PT8H
-  managed_policy_arns:
-    - arn:aws:iam::aws:policy/AdministratorAccess
-
-DeveloperAccess:
-  description: Application development access
-  session_duration: PT4H
-  inline_policy_file: policies/permission_sets/developer_access.json
-```
-
-### account_assignments.yaml
-
-Map groups to accounts with specific permission sets:
-
-```yaml
-- principal_name: SuperAdmins
-  principal_type: GROUP
-  account_name: sandbox_dev
-  permission_set: AdministratorAccess
-
-- principal_name: Developers
-  principal_type: GROUP
-  account_name: sandbox_dev
-  permission_set: DeveloperAccess
-```
+Variable substitution is supported using `${variable_name}` syntax.
 
 ## Workflow
 
@@ -181,63 +94,13 @@ Map groups to accounts with specific permission sets:
 
 ## Data Transformation
 
-The `locals.tf` file handles YAML parsing and data transformation:
-
-```hcl
-# Parse YAML files
-locals {
-  users_yaml_raw = yamldecode(
-    replace(
-      file("${path.root}/config/users.yaml"),
-      "${superadmin_email}",
-      var.superadmin_email
-    )
-  )
-
-  # Transform to Terraform structures
-  identity_center_users = local.users_yaml_raw
-
-  # ... more transformations
-}
-```
-
-This allows:
-
-- Variable substitution in YAML files
-- Consistent data structure for modules
-- Easy configuration updates without touching Terraform code
+`locals.tf` parses YAML files and transforms them for module consumption, supporting variable substitution (e.g., `${superadmin_email}`) for dynamic values.
 
 ## Module Interface
 
-### Organization Module
-
-**Inputs**:
-
-- `common_tags`: Tags applied to all resources
-- `accounts`: Map of accounts to create
-- `organizational_units`: Map of OUs
-
-**Outputs**:
-
-- `organization_id`: AWS Organization ID
-- `accounts`: Map of created account IDs
-- `organizational_units`: Map of created OU IDs
-
-### Identity Center Module
-
-**Inputs**:
-
-- `accounts`: Account map from organization module
-- `users`: User definitions from YAML
-- `groups`: Group definitions from YAML
-- `permission_sets`: Permission set configurations from YAML
-- `account_assignments`: Access mappings from YAML
-
-**Outputs**:
-
-- `sso_instance_arn`: Identity Center instance ARN
-- `sso_portal_url`: SSO login portal URL
-- User, group, and permission set details
+See module READMEs for detailed inputs/outputs:
+- [modules/organization/README.md](../modules/organization/README.md)
+- [modules/identity_center/README.md](../modules/identity_center/README.md)
 
 ## Best Practices
 
@@ -257,12 +120,12 @@ This allows:
 
 ### Testing
 
-Before applying to production:
+Before applying:
 
-1. Run `terraform fmt -recursive` to format code
-2. Run `terraform validate` to check syntax
-3. Run `terraform plan` and review changes carefully
-4. Test in non-production accounts first
+1. Validate YAML: `yq eval config/*.yaml` or `python -m yaml config/*.yaml`
+2. Format: `terraform fmt -recursive`
+3. Validate: `terraform validate`
+4. Review: `terraform plan`
 
 ### State Management
 
