@@ -1,0 +1,16 @@
+# Example tfvars file for pipelines
+# Copy this to terraform.tfvars and fill in your values
+
+aws_region  = "us-east-1"
+aws_profile = "aws-identity-master"
+
+github_repo_owner = "your-github-username"
+github_repo_name  = "aws-identity-platform"
+github_branch     = "develop"
+
+# You need to create a GitHub connection in AWS Console first
+# Go to: Developer Tools > Settings > Connections > Create connection
+github_connection_arn = "arn:aws:codestar-connections:us-east-1:ACCOUNT_ID:connection/CONNECTION_ID"
+
+pipeline_name = "aws-identity-platform-pipeline"
+environment   = "dev"
