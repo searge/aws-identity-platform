@@ -41,3 +41,11 @@ plan.json
 *.diff
 
 tmp
+.env
+
+# AI
+.mcp.json
+# Node
+node_modules
+pnpm-lock.yaml
+package.json

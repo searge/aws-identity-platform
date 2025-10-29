@@ -35,9 +35,22 @@ All configuration is defined in YAML files under `config/`:
 - `users.yaml` - User definitions with names and emails
 - `groups.yaml` - Group definitions and memberships
 - `permission_sets.yaml` - Permission sets with policies and session durations
-- `account_assignments.yaml` - Mappings of groups to accounts and permission sets
+- `account_assignments.yaml` - Grouped mappings of principals to permission sets and accounts
 
 Variable substitution is supported using `${variable_name}` syntax.
+
+### Account Assignments Structure
+
+The `account_assignments.yaml` uses AWS-style grouped structure to reduce duplication:
+
+```yaml
+SuperAdmins:
+  principal_type: GROUP
+  permission_sets: [AdministratorAccess]
+  account_list: [sandbox_dev, prod, audit]
+```
+
+This generates all combinations using Cartesian product (setproduct): SuperAdmins × AdministratorAccess × 3 accounts = 3 assignments.
 
 ## Workflow
 
@@ -78,8 +91,17 @@ Variable substitution is supported using `${variable_name}` syntax.
    - Run `terraform plan` and `apply`
 
 2. **Change user's access**:
-   - Modify `config/account_assignments.yaml`
+   - Modify `config/account_assignments.yaml` (add/remove accounts or permission sets from the group)
    - Run `terraform plan` and `apply`
+
+   Example - grant group access to new account:
+
+   ```yaml
+   Developers:
+     principal_type: GROUP
+     permission_sets: [DeveloperAccess]
+     account_list: [sandbox_dev, new_account]  # added new_account
+   ```
 
 3. **Add a new permission set**:
    - Define in `config/permission_sets.yaml`
@@ -94,11 +116,16 @@ Variable substitution is supported using `${variable_name}` syntax.
 
 ## Data Transformation
 
-`locals.tf` parses YAML files and transforms them for module consumption, supporting variable substitution (e.g., `${superadmin_email}`) for dynamic values.
+`locals.tf` parses YAML files and transforms them for module consumption:
+
+- **Variable substitution**: Supports `${variable_name}` syntax (e.g., `${superadmin_email}`)
+- **Two-step flattening**: Uses clear intermediate variables for complex transformations (permission sets, group memberships)
+- **Cartesian product**: Uses `setproduct()` for account assignments to elegantly generate all permission × account combinations
 
 ## Module Interface
 
 See module READMEs for detailed inputs/outputs:
+
 - [modules/organization/README.md](../modules/organization/README.md)
 - [modules/identity_center/README.md](../modules/identity_center/README.md)
 

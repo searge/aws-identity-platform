@@ -36,11 +36,9 @@ locals {
 
   # Parse YAML configuration files with template substitution
   users_yaml_raw = yamldecode(
-    replace(
-      file("${path.root}/config/users.yaml"),
-      "$${superadmin_email}",
-      var.superadmin_email
-    )
+    templatefile("${path.root}/config/users.yaml", {
+      superadmin_email = var.superadmin_email
+    })
   )
   groups_yaml              = yamldecode(file("${path.root}/config/groups.yaml"))
   permission_sets_yaml     = yamldecode(file("${path.root}/config/permission_sets.yaml"))
@@ -56,22 +54,20 @@ locals {
     }
   }
 
-  permission_sets = {
-    for ps_key, ps_value in local.permission_sets_yaml : ps_key => {
-      description         = ps_value.description
-      session_duration    = lookup(ps_value, "session_duration", "PT1H")
-      managed_policy_arns = lookup(ps_value, "managed_policy_arns", [])
-      inline_policy_file  = lookup(ps_value, "inline_policy_file", null)
-    }
-  }
+  # Pass YAML directly - defaults are handled by optional() in module variables
+  permission_sets = local.permission_sets_yaml
 
-  account_assignments = [
-    for assignment in local.account_assignments_yaml : {
-      principal_name = assignment.principal_name
-      principal_type = assignment.principal_type
-      account_name   = assignment.account_name
-      permission_set = assignment.permission_set
-    }
-  ]
+  # Flatten grouped account assignments using setproduct (Cartesian product)
+  # setproduct creates all combinations of permission_sets × account_list for each assignment
+  account_assignments = flatten([
+    for assignment_key, assignment_config in local.account_assignments_yaml : [
+      for combo in setproduct(assignment_config.permission_sets, assignment_config.account_list) : {
+        principal_name = lookup(assignment_config, "principal", assignment_key)
+        principal_type = assignment_config.principal_type
+        permission_set = combo[0] # permission set from the combination
+        account_name   = combo[1] # account from the combination
+      }
+    ]
+  ])
 }
 

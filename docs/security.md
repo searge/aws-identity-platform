@@ -1,5 +1,44 @@
 # Security Guidelines
 
+## Access Control Model
+
+### Group-Based Access (Best Practice)
+
+**This project follows AWS best practices by granting permissions to groups, not individual users.**
+
+**How it works:**
+
+```txt
+User → Group → Permission Set → AWS Account
+```
+
+**Example:**
+
+1. User `dereban` is added to group `SuperAdmins` ([config/groups.yaml](../config/groups.yaml))
+2. Group `SuperAdmins` is granted `AdministratorAccess` permission set ([config/account_assignments.yaml](../config/account_assignments.yaml))
+3. Permission set is assigned to specific AWS accounts (sandbox, prod, audit)
+
+**Why groups, not users?**
+
+✅ **Easier management** - Add user to group once, they inherit all permissions
+✅ **Consistency** - All users in same role get identical access
+✅ **Auditability** - Review group memberships instead of individual assignments
+✅ **Scalability** - Onboard new users in seconds by adding to existing groups
+
+**What we DON'T do:**
+
+❌ Direct user-to-permission assignments
+❌ Permission sets assigned to individual users
+❌ User-specific access rules
+
+**Where to look:**
+
+- **Groups defined**: [`config/groups.yaml`](../config/groups.yaml)
+- **Users assigned to groups**: [`config/groups.yaml`](../config/groups.yaml) (members field)
+- **Groups granted permissions**: [`config/account_assignments.yaml`](../config/account_assignments.yaml) (principal_type: GROUP)
+
+---
+
 ## Core Security Principles
 
 **Zero Trust**: All access requires verification, regardless of location or user status.
