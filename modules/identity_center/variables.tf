@@ -1,7 +1,12 @@
 variable "accounts" {
   description = "Map of AWS accounts from the organization module."
-  type        = any
-  default     = {}
+  type = map(object({
+    id    = string
+    arn   = string
+    email = string
+    name  = string
+  }))
+  default = {}
 }
 
 variable "users" {
