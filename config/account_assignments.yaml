@@ -1,69 +1,56 @@
 # SuperAdmins - full access to all accounts
-- principal_name: SuperAdmins
+SuperAdmins:
   principal_type: GROUP
-  account_name: sandbox_dev
-  permission_set: AdministratorAccess
-
-- principal_name: SuperAdmins
-  principal_type: GROUP
-  account_name: prod
-  permission_set: AdministratorAccess
-
-- principal_name: SuperAdmins
-  principal_type: GROUP
-  account_name: audit
-  permission_set: AdministratorAccess
+  permission_sets:
+    - AdministratorAccess
+  account_list:
+    - sandbox_dev
+    - prod
+    - audit
 
 # PlatformAdmins - full access everywhere
-- principal_name: PlatformAdmins
+PlatformAdmins:
   principal_type: GROUP
-  account_name: sandbox_dev
-  permission_set: AdministratorAccess
+  permission_sets:
+    - AdministratorAccess
+  account_list:
+    - sandbox_dev
+    - prod
+    - audit
 
-- principal_name: PlatformAdmins
+# Developers - dev access
+DevelopersSandbox:
+  principal: Developers
   principal_type: GROUP
-  account_name: prod
-  permission_set: AdministratorAccess
+  permission_sets:
+    - DeveloperAccess
+  account_list:
+    - sandbox_dev
 
-- principal_name: PlatformAdmins
+# Developers - prod read-only
+DevelopersProd:
+  principal: Developers
   principal_type: GROUP
-  account_name: audit
-  permission_set: AdministratorAccess
-
-# Developers - dev access + prod read-only
-- principal_name: Developers
-  principal_type: GROUP
-  account_name: sandbox_dev
-  permission_set: DeveloperAccess
-
-- principal_name: Developers
-  principal_type: GROUP
-  account_name: prod
-  permission_set: SecurityAuditorFull
+  permission_sets:
+    - SecurityAuditorFull
+  account_list:
+    - prod
 
 # DevOps - infrastructure management
-- principal_name: DevOpsEngineers
+DevOpsEngineers:
   principal_type: GROUP
-  account_name: sandbox_dev
-  permission_set: InfrastructureAdmin
-
-- principal_name: DevOpsEngineers
-  principal_type: GROUP
-  account_name: prod
-  permission_set: InfrastructureAdmin
+  permission_sets:
+    - InfrastructureAdmin
+  account_list:
+    - sandbox_dev
+    - prod
 
 # Security Auditors - read-only everywhere
-- principal_name: SecurityAuditors
+SecurityAuditors:
   principal_type: GROUP
-  account_name: sandbox_dev
-  permission_set: SecurityAuditorFull
-
-- principal_name: SecurityAuditors
-  principal_type: GROUP
-  account_name: prod
-  permission_set: SecurityAuditorFull
-
-- principal_name: SecurityAuditors
-  principal_type: GROUP
-  account_name: audit
-  permission_set: SecurityAuditorFull
+  permission_sets:
+    - SecurityAuditorFull
+  account_list:
+    - sandbox_dev
+    - prod
+    - audit
