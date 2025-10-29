@@ -41,6 +41,7 @@ plan.json
 *.diff
 
 tmp
+.env
 
 # AI
 .mcp.json
