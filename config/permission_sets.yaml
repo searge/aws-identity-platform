@@ -26,3 +26,17 @@ SecurityAuditorFull:
   managed_policy_arns:
     - arn:aws:iam::aws:policy/SecurityAudit
     - arn:aws:iam::aws:policy/ReadOnlyAccess
+
+# Example: Using customer managed policies
+# IMPORTANT: Customer managed policies must exist in target accounts BEFORE applying this configuration
+#
+# CustomDeveloperAccess:
+#   description: Custom developer access with customer managed policies
+#   session_duration: PT4H
+#   managed_policy_arns:
+#     - arn:aws:iam::aws:policy/ReadOnlyAccess
+#   customer_managed_policy_references:
+#     - name: CustomS3AccessPolicy      # Policy name in target accounts
+#       path: /                          # Optional: IAM policy path (default: /)
+#     - name: CustomLambdaAccessPolicy
+#       path: /custom/policies/

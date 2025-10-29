@@ -58,11 +58,13 @@ locals {
   permission_sets = local.permission_sets_yaml
 
   # Flatten grouped account assignments using setproduct (Cartesian product)
-  # setproduct creates all combinations of permission_sets × account_list for each assignment
+  # Example: {permission_sets: ["Admin", "ReadOnly"], account_list: ["dev", "prod"]}
+  # Becomes: [{Admin, dev}, {Admin, prod}, {ReadOnly, dev}, {ReadOnly, prod}]
+  # This avoids creating N module instances (AWS Sample approach) - we flatten once at root
   account_assignments = flatten([
     for assignment_key, assignment_config in local.account_assignments_yaml : [
       for combo in setproduct(assignment_config.permission_sets, assignment_config.account_list) : {
-        principal_name = lookup(assignment_config, "principal", assignment_key)
+        principal_name = try(assignment_config.principal, assignment_key)
         principal_type = assignment_config.principal_type
         permission_set = combo[0] # permission set from the combination
         account_name   = combo[1] # account from the combination

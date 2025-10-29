@@ -1,5 +1,6 @@
 # SuperAdmins - full access to all accounts
 SuperAdmins:
+  principal: SuperAdmins
   principal_type: GROUP
   permission_sets:
     - AdministratorAccess
@@ -10,6 +11,7 @@ SuperAdmins:
 
 # PlatformAdmins - full access everywhere
 PlatformAdmins:
+  principal: PlatformAdmins
   principal_type: GROUP
   permission_sets:
     - AdministratorAccess
@@ -38,6 +40,7 @@ DevelopersProd:
 
 # DevOps - infrastructure management
 DevOpsEngineers:
+  principal: DevOpsEngineers
   principal_type: GROUP
   permission_sets:
     - InfrastructureAdmin
@@ -47,6 +50,7 @@ DevOpsEngineers:
 
 # Security Auditors - read-only everywhere
 SecurityAuditors:
+  principal: SecurityAuditors
   principal_type: GROUP
   permission_sets:
     - SecurityAuditorFull

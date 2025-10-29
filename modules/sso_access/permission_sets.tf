@@ -3,14 +3,14 @@ resource "aws_ssoadmin_permission_set" "this" {
 
   name             = each.key
   description      = each.value.description
-  instance_arn     = local.sso_instance_arn
+  instance_arn     = var.sso_instance_arn
   session_duration = each.value.session_duration
 }
 
 resource "aws_ssoadmin_managed_policy_attachment" "this" {
   for_each = local.managed_policy_attachments
 
-  instance_arn       = local.sso_instance_arn
+  instance_arn       = var.sso_instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.this[each.value.permission_set].arn
   managed_policy_arn = each.value.policy_arn
 }
@@ -21,9 +21,21 @@ resource "aws_ssoadmin_permission_set_inline_policy" "this" {
     if ps.inline_policy_file != null
   }
 
-  instance_arn       = local.sso_instance_arn
+  instance_arn       = var.sso_instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.this[each.key].arn
   inline_policy      = file(each.value.inline_policy_file)
+}
+
+resource "aws_ssoadmin_customer_managed_policy_attachment" "this" {
+  for_each = local.customer_managed_policy_attachments
+
+  instance_arn       = var.sso_instance_arn
+  permission_set_arn = aws_ssoadmin_permission_set.this[each.value.permission_set].arn
+
+  customer_managed_policy_reference {
+    name = each.value.policy_name
+    path = each.value.policy_path
+  }
 }
 
 # AWS IAM Identity Center has eventual consistency.
@@ -34,6 +46,7 @@ resource "time_sleep" "wait_for_permission_sets" {
   depends_on = [
     aws_ssoadmin_permission_set.this,
     aws_ssoadmin_managed_policy_attachment.this,
+    aws_ssoadmin_customer_managed_policy_attachment.this,
     aws_ssoadmin_permission_set_inline_policy.this
   ]
 
