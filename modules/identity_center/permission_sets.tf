@@ -8,17 +8,7 @@ resource "aws_ssoadmin_permission_set" "this" {
 }
 
 resource "aws_ssoadmin_managed_policy_attachment" "this" {
-  for_each = {
-    for item in flatten([
-      for ps_key, ps in var.permission_sets : [
-        for policy_arn in ps.managed_policy_arns : {
-          key            = "${ps_key}-${policy_arn}"
-          permission_set = ps_key
-          policy_arn     = policy_arn
-        }
-      ]
-    ]) : item.key => item
-  }
+  for_each = local.managed_policy_attachments
 
   instance_arn       = local.sso_instance_arn
   permission_set_arn = aws_ssoadmin_permission_set.this[each.value.permission_set].arn
