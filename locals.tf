@@ -36,11 +36,9 @@ locals {
 
   # Parse YAML configuration files with template substitution
   users_yaml_raw = yamldecode(
-    replace(
-      file("${path.root}/config/users.yaml"),
-      "$${superadmin_email}",
-      var.superadmin_email
-    )
+    templatefile("${path.root}/config/users.yaml", {
+      superadmin_email = var.superadmin_email
+    })
   )
   groups_yaml              = yamldecode(file("${path.root}/config/groups.yaml"))
   permission_sets_yaml     = yamldecode(file("${path.root}/config/permission_sets.yaml"))
@@ -56,14 +54,8 @@ locals {
     }
   }
 
-  permission_sets = {
-    for ps_key, ps_value in local.permission_sets_yaml : ps_key => {
-      description         = ps_value.description
-      session_duration    = lookup(ps_value, "session_duration", "PT1H")
-      managed_policy_arns = lookup(ps_value, "managed_policy_arns", [])
-      inline_policy_file  = lookup(ps_value, "inline_policy_file", null)
-    }
-  }
+  # Pass YAML directly - defaults are handled by optional() in module variables
+  permission_sets = local.permission_sets_yaml
 
   account_assignments = [
     for assignment in local.account_assignments_yaml : {
