@@ -64,3 +64,17 @@ terraform apply plan.tfplan
 ## Outputs
 
 After applying, access the Identity Center portal at the URL provided in outputs to configure user passwords and MFA.
+
+## References
+
+### Official AWS Samples
+
+- [aws-samples/terraform-aws-identity-center](https://github.com/aws-samples/terraform-aws-identity-center) - Permission sets and account assignments
+- [aws-samples/terraform-aws-identity-center-users-and-groups](https://github.com/aws-samples/terraform-aws-identity-center-users-and-groups) - Users and groups management
+- [aws-ia/terraform-aws-iam-identity-center](https://github.com/aws-ia/terraform-aws-iam-identity-center) - AWS IA official module
+
+### Best Practices
+
+- [Terraform Best Practices by Anton Babenko](https://www.terraform-best-practices.com)
+- [AWS IAM Identity Center Documentation](https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html)
+- [Terraform Registry: AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)

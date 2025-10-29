@@ -99,6 +99,7 @@ Variable substitution is supported using `${variable_name}` syntax.
 ## Module Interface
 
 See module READMEs for detailed inputs/outputs:
+
 - [modules/organization/README.md](../modules/organization/README.md)
 - [modules/identity_center/README.md](../modules/identity_center/README.md)
 
