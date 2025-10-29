@@ -64,7 +64,7 @@ locals {
   account_assignments = flatten([
     for assignment_key, assignment_config in local.account_assignments_yaml : [
       for combo in setproduct(assignment_config.permission_sets, assignment_config.account_list) : {
-        principal_name = lookup(assignment_config, "principal", assignment_key)
+        principal_name = try(assignment_config.principal, assignment_key)
         principal_type = assignment_config.principal_type
         permission_set = combo[0] # permission set from the combination
         account_name   = combo[1] # account from the combination
