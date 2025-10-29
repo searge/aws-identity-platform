@@ -26,7 +26,10 @@ resource "aws_ssoadmin_permission_set_inline_policy" "this" {
   inline_policy      = file(each.value.inline_policy_file)
 }
 
-# Explicitly provision permission sets to accounts before assignments
+# AWS IAM Identity Center has eventual consistency.
+# Permission sets may not be immediately available for assignments after creation.
+# This wait ensures permission sets are fully propagated before assignments.
+# See: https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-considerations.html
 resource "time_sleep" "wait_for_permission_sets" {
   depends_on = [
     aws_ssoadmin_permission_set.this,
