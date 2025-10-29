@@ -7,5 +7,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.94"
     }
+    # Time Provider (required by sso_access module for eventual consistency handling)
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
   }
 }

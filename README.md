@@ -13,7 +13,8 @@ Terraform configuration for managing AWS Organizations and IAM Identity Center a
 ```bash
 modules/
 ├── organization/     # AWS Organizations and accounts
-└── identity_center/  # IAM Identity Center (SSO)
+├── sso_identities/   # IAM Identity Center - Identity Layer (users, groups)
+└── sso_access/       # IAM Identity Center - Authorization Layer (permissions, assignments)
 
 config/
 ├── users.yaml                # User definitions
@@ -22,11 +23,26 @@ config/
 └── account_assignments.yaml  # Group-to-account mappings
 ```
 
+## Architecture
+
+This project follows **AWS Best Practices** for IAM Identity Center modularization:
+
+- **`sso_identities`**: Identity Layer - manages "who" (users, groups, memberships)
+- **`sso_access`**: Authorization Layer - manages "what & where" (permission sets, policy attachments, account assignments)
+
+This separation provides:
+- **Clear boundaries**: Identity changes don't trigger access changes
+- **Independent lifecycle**: Users/groups change rarely; permissions/assignments change often
+- **Smaller blast radius**: Changes are isolated to their respective domains
+- **Better maintainability**: Each module has single responsibility
+
 ## Features
 
 - **AWS Organizations**: Master account with Development OU containing Sandbox-Dev, Prod, and Audit accounts
 - **IAM Identity Center**: Centralized SSO with declarative user, group, and permission management
 - **Configuration-as-Code**: All identities and permissions defined in YAML files
+- **Three Policy Types**: Support for AWS managed, customer managed, and inline policies
+- **Modular Architecture**: Following AWS Way pattern for separation of concerns
 
 ## Groups & Access
 

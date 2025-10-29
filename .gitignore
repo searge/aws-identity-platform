@@ -49,3 +49,4 @@ tmp
 node_modules
 pnpm-lock.yaml
 package.json
+scripts/tf-assistant.sh
